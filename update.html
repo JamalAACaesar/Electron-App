@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Update Wine</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css"
+    />
+    <style>
+      body {
+        position: relative;
+        background-image: url("vineyard.jpg");
+        background-size: cover;
+        background-position: center;
+      }
+
+      body::before {
+        content: " ";
+        z-index: 100;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        width: 100%;
+        height: 100%;
+      }
+
+      section {
+        z-index: 200;
+        position: relative;
+      }
+
+      h1,
+      label {
+        font-family: "Segoe UI";
+        color: white;
+      }
+
+      .heading {
+        display: flex;
+        justify-content: center;
+      }
+
+      .gif {
+        width: 35px;
+        height: 35px;
+        top: 0px;
+        margin-bottom: 1em;
+      }
+
+      .gif img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .select {
+        display: block;
+      }
+
+      select {
+        width: 100%;
+      }
+    </style>
+  </head>
+
+  <body>
+    <section class="section">
+      <div class="container">
+        <div class="heading">
+          <div class="gif">
+            <img src="wineglass.gif" alt="" srcset="" />
+          </div>
+          <h1
+            id="test"
+            class="mb-6"
+            style="text-align: center; font-size: 1.5rem"
+          >
+            Add a wine you would love to taste
+          </h1>
+          <div class="gif">
+            <img src="wineglass.gif" alt="" srcset="" />
+          </div>
+        </div>
+        <form>
+          <div>
+            <label><b>Enter Name of Wine:</b></label>
+            <input class="input" type="text" id="bottle" autofocus required />
+          </div>
+          <br />
+          <div>
+            <label><b>Enter the Category:</b></label>
+            <!-- <input class="input" type="select" id="category" autofocus required> -->
+            <div class="select">
+              <select name="" id="categories">
+                <!-- option*3 -->
+                <option value="">Select a category</option>
+                <option value="Red">Reds</option>
+                <option value="White">Whites</option>
+                <option value="Dessert">Deserts</option>
+              </select>
+            </div>
+          </div>
+          <br />
+          <div>
+            <label><b>Choose the type:</b></label>
+            <!-- <input class="select" type="select" id="types" autofocus required> -->
+            <!-- div.select>select "hit tab" -->
+            <div class="select"><select name="" id="types"></select></div>
+          </div>
+          <br />
+          <div>
+            <label><b>Enter the year:</b></label>
+            <input class="input" type="number" id="year" autofocus required />
+          </div>
+          <br />
+          <div>
+            <label><b>Enter the Winery:</b></label>
+            <input class="input" type="text" id="winery" autofocus required />
+          </div>
+          <br />
+          <div>
+            <label><b>Year Purchased:</b></label>
+            <input
+              class="input"
+              type="number"
+              id="purchase"
+              autofocus
+              required
+            />
+          </div>
+          <br />
+          <div>
+            <label><b>Enter a rating:</b></label>
+            <input
+              class="input"
+              type="number"
+              id="rating"
+              autofocus
+              value="1"
+              min="0"
+              max="10"
+            />
+          </div>
+
+          <button class="button is-info mt-4" type="submit">Update Bottle</button>
+        </form>
+      </div>
+    </section>
+    <script>
+      var electron = require("electron");
+      var { ipcRenderer } = electron;
+
+      let currentItem = null
+
+      document.addEventListener("DOMContentLoaded", () => {
+        console.log("PAGE LOADED 🟩");
+
+        const data = window.localStorage.getItem("currentItem");
+        currentItem = JSON.parse(data)
+
+        document.getElementById('bottle').value = currentItem.name;
+
+        document.getElementById("categories").value = currentItem.category;
+        document.getElementById("types").value = currentItem.type;
+        document.getElementById("year").value = currentItem.year;
+        document.getElementById("winery").value = currentItem.winery;
+        document.getElementById("purchase").value = currentItem.yearPurchased
+        document.getElementById("rating").value = currentItem.rating
+      });
+
+      const categories = document.getElementById("categories");
+      const types = document.getElementById("types");
+
+      const reditems = [
+        {
+          value: "Carbenet",
+        },
+        {
+          value: "Carbenet Sauvignon",
+        },
+        {
+          value: "Chardonnay",
+        },
+        {
+          value: "Malbec",
+        },
+        {
+          value: "Merlot",
+        },
+        {
+          value: "Sirah/Shiraz",
+        },
+        {
+          value: "Pinot Noir",
+        },
+        {
+          value: "Port",
+        },
+        {
+          value: "Other Red Varieties",
+        },
+        {
+          value: "Red Blends",
+        },
+      ];
+
+      const whiteitems = [
+        {
+          value: "Riesling",
+        },
+        {
+          value: "Sauvignon Blanc",
+        },
+        {
+          value: "Verdelho",
+        },
+        {
+          value: "Semillon",
+        },
+        {
+          value: "Chardonnay",
+        },
+        {
+          value: "Pinot Gris/ Pinot Grigio",
+        },
+        {
+          value: "Other White Varieties",
+        },
+      ];
+
+      const Dessert = [
+        {
+          value: "Eiswein(Ice Wine)",
+        },
+        {
+          value: "Sauternes",
+        },
+        {
+          value: "Other Dessert Varieties",
+        },
+        {
+          value: "Dessert Blends",
+        },
+      ];
+      categories.addEventListener("change", (e) => {
+        console.log(e.target.value);
+
+        // Based on the selected value it loops through the selected list (i.e. Red,White,deserts)
+        // And generates a new option for each entry in the array of objects.
+        const value = e.target.value;
+        types.innerHTML = "";
+        if (value === "Red") {
+          reditems.forEach((elm) => {
+            const newoption = document.createElement("option");
+            const optiontitle = document.createTextNode(elm.value);
+
+            newoption.appendChild(optiontitle);
+            newoption.setAttribute("value", elm.value);
+            types.appendChild(newoption);
+          });
+        }
+
+        if (value === "White") {
+          whiteitems.forEach((elm) => {
+            const newoption = document.createElement("option");
+            const optiontitle = document.createTextNode(elm.value);
+
+            newoption.appendChild(optiontitle);
+            newoption.setAttribute("value", elm.value);
+            types.appendChild(newoption);
+          });
+        }
+
+        if (value === "Dessert") {
+          Dessert.forEach((elm) => {
+            const newoption = document.createElement("option");
+            const optiontitle = document.createTextNode(elm.value);
+
+            newoption.appendChild(optiontitle);
+            newoption.setAttribute("value", elm.value);
+            types.appendChild(newoption);
+          });
+        }
+      });
+      var form = document.querySelector("form");
+      form.addEventListener("submit", submitForm);
+
+      function submitForm(e) {
+        console.log("started");
+        e.preventDefault();
+
+        var name = document.querySelector("#bottle").value;
+        var category = document.querySelector("#categories").value;
+        var type = document.querySelector("#types").value;
+        var year = Number(document.querySelector("#year").value);
+        var winery = document.querySelector("#winery").value;
+        var yearPurchased = Number(document.querySelector("#purchase").value);
+        var rating = Number(document.querySelector("#rating").value);
+        //var item =
+
+        const item = {
+          name,
+          category,
+          type,
+          year,
+          winery,
+          yearPurchased,
+          rating,
+        };
+
+        ipcRenderer.send("item:update", { wineID: currentItem.wineID, item }); //send to main.js
+      }
+    </script>
+  </body>
+</html>

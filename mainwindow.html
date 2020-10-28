@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bulma@0.9.1/css/bulma.min.css"
+    />
+    <title>Caesar's Wine</title>
+    <style>
+      .container {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      * {
+        font-family: "Segoe UI";
+        color: black;
+      }
+
+      ul {
+        list-style: none;
+      }
+
+      body {
+        position: relative;
+        background-image: url("holdingWine.jpg");
+        background-size: cover;
+        background-position: center;
+        margin: 0;
+        min-height: 100vh;
+      }
+
+      body::before {
+        content: " ";
+        z-index: 100;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        width: 100%;
+        height: 100%;
+      }
+
+      section {
+        z-index: 200;
+        position: relative;
+      }
+
+      .title {
+        text-transform: uppercase;
+        text-align: center;
+      }
+      .mytext {
+        text-align: center;
+      }
+      li:not(:last-child) {
+        margin-bottom: 1.2em;
+      }
+      .btn-delete {
+        display: block;
+        margin: 0 auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <div style="z-index: 101; min-width: 20em" class="box">
+        <h1 class="title">Wine Shop</h1>
+        <hr />
+        <ul></ul>
+        <hr />
+        <button id="clear" class="btn-delete button is-danger is-light">
+          Clearlist
+        </button>
+      </div>
+    </div>
+
+    <script>
+      const electron = require("electron");
+      const { ipcRenderer } = electron;
+      const ul = document.querySelector("ul");
+
+      console.log("STARTEDD");
+
+      ipcRenderer.on("init", (event, listOfWine) => {
+        console.log("INIT", listOfWine);
+
+        listOfWine.forEach((item) => {
+          const wine = `Bottle: ${item.name}<br/>Category: ${item.category}<br/>Type: ${item.type}<br/>Purchase: ${item.yearPurchased} </br/> Year: ${item.year}
+    <br/>Winery: ${item.winery}<br/> Rating: ${item.rating}`;
+
+          const li = document.createElement("li");
+
+          const itemText = document.createElement("p");
+          itemText.classList.add("mytext");
+          itemText.innerHTML = wine;
+
+          const btnUpdate = document.createElement("button");
+          btnUpdate.textContent = 'Update';
+          btnUpdate.addEventListener('click', () => {
+            //window.location = 'update.html'
+
+            window.localStorage.setItem('currentItem', JSON.stringify(item))
+
+            ipcRenderer.send('item:select', item)
+          })
+
+          const itemBtnDel = document.createElement("button");
+          itemBtnDel.textContent = 'X'
+          itemBtnDel.addEventListener("click", () => {
+            console.log("MY ID IS: ", item.wineID);
+            
+            ipcRenderer.send('item:del', item.wineID)
+          });
+
+          li.appendChild(itemText);
+          li.appendChild(itemBtnDel);
+          li.appendChild(btnUpdate);
+
+          ul.appendChild(li);
+        });
+      });
+
+      //catch add item
+      ipcRenderer.on("item:add", function (e, item) {
+        const li = document.createElement("li");
+        const itemText = document.createElement("p");
+        itemText.classList.add("mytext");
+        itemText.innerHTML = item;
+        li.appendChild(itemText);
+        ul.appendChild(li);
+      });
+
+      //item clear
+      ipcRenderer.on("item:clear", function () {
+        ul.innerHTML = "";
+      });
+
+      //remove item
+      // ul.addEventListener("dblclick", removeItem);
+      // const clearbtn = document.querySelector("#clear");
+      // clearbtn.addEventListener("click", () => {
+      //   ul.innerHTML = "";
+      // });
+      // function removeItem(e) {
+      //   e.target.remove();
+      // }
+    </script>
+  </body>
+</html>
